@@ -1,30 +1,27 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-require("dotenv").config();
+import express from 'express';
+import mongoose from 'mongoose';
+import carRoutes from './routes/carRoutes.js';  
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
+const port = 3001;
 
-// Middleware
-app.use(express.json());  // Para parsear los cuerpos de las peticiones en formato JSON
-app.use(cors());  // Habilitar CORS
+// Middleware para parsear JSON
+app.use(express.json());
 
-// Conexión a la base de datos MongoDB
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("Conectado a la base de datos"))
-  .catch(err => console.error("Error al conectar con MongoDB", err));
+// Conexión a la base de datos
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/rb-cars-back', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log('Conectado a MongoDB'))
+  .catch(err => console.error('Error al conectar con MongoDB:', err));
 
+// Rutas de autos
+app.use('/api/cars', carRoutes);
 
-app.get("/", (req, res) => {
-  res.send("¡Bienvenido a la API de RB-Cars!");
-});
-
-// Configuración del puerto
-const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Servidor escuchando en el puerto ${port}`);
 });
-
-//Agrego archivo de rutas acá:
-const carRoutes = require("./routes/carRoutes");
-app.use("/api/cars", carRoutes);

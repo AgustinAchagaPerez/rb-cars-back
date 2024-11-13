@@ -1,59 +1,34 @@
-const express = require("express");
-const Car = require("../models/Car");
+import express from 'express'; 
+import Car from '../models/Car.js';
+
 const router = express.Router();
 
-// Crear un auto
-router.post("/", async (req, res) => {
-  try {
-    const newCar = new Car(req.body);
-    await newCar.save();
-    res.status(201).json(newCar);
-  } catch (error) {
-    res.status(400).json({ message: "Error al crear el auto", error });
-  }
-});
-
 // Obtener todos los autos
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const cars = await Car.find();
-    res.status(200).json(cars);
+    res.json(cars);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener autos", error });
+    res.status(500).json({ message: error.message });
   }
 });
 
-// Obtener un auto por ID
-router.get("/:id", async (req, res) => {
+// Crear un auto
+router.post('/', async (req, res) => {
+  const car = new Car({
+    make: req.body.make,
+    model: req.body.model,
+    year: req.body.year,
+    price: req.body.price,
+    status: req.body.status, // 'alquilar' o 'comprar'
+  });
+
   try {
-    const car = await Car.findById(req.params.id);
-    if (!car) return res.status(404).json({ message: "Auto no encontrado" });
-    res.status(200).json(car);
+    const newCar = await car.save();
+    res.status(201).json(newCar);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener el auto", error });
+    res.status(400).json({ message: error.message });
   }
 });
 
-// Actualizar un auto
-router.put("/:id", async (req, res) => {
-  try {
-    const updatedCar = await Car.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedCar) return res.status(404).json({ message: "Auto no encontrado" });
-    res.status(200).json(updatedCar);
-  } catch (error) {
-    res.status(400).json({ message: "Error al actualizar el auto", error });
-  }
-});
-
-// Eliminar un auto
-router.delete("/:id", async (req, res) => {
-  try {
-    const deletedCar = await Car.findByIdAndDelete(req.params.id);
-    if (!deletedCar) return res.status(404).json({ message: "Auto no encontrado" });
-    res.status(200).json({ message: "Auto eliminado" });
-  } catch (error) {
-    res.status(500).json({ message: "Error al eliminar el auto", error });
-  }
-});
-
-module.exports = router;
+export default router;
